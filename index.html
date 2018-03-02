@@ -1,0 +1,162 @@
+
+<!DOCTYPE html>
+<!--
+    John Galletta
+    INFO600-001
+    February 24, 2018
+    Dr. Yuan An
+    Assignment 3 - PHP/AJAX Server-Side Functionality with Asynchronous Page Events
+-->
+<html>
+    <head>
+        <link rel="stylesheet" href="assign3.css">
+        <title>Search NYT Best Sellers</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script>
+            var input_list = document.getElementsByName('inputBox');
+            var resultsStyle = "margin-top:285px;  margin-bottom:60px; text-align:left;";
+            var resultsPlaceholderStyle = "margin-top:285px;  margin-bottom:60px; text-align:left;";
+            var resultsPlaceholderHTML = "<img src='book_PNG2117.png' height=225></br><h3 class='w3-blue shadowedtext' style='text-align:center'>Enter search criteria to begin...</h3>";
+            var negativeResultsPlaceholderHTML = "<img src='book_PNG2117.png' height=225></br><h3 class='w3-blue shadowedtext' style='text-align:center'>Please enter a positive price...</h3>";
+
+            function preventSubmission() {
+                if (event.keyCode === 13) {
+                    event.preventDefault();
+                    showResults();
+                }
+            }
+
+            function validateFields() {
+                var validated = false;
+
+                for (var i = 0; i < input_list.length; i++) {
+                    //alert(input_list[i].value.toString().trim());
+
+                    if (input_list[i].value.toString().trim() != "") {
+                        validated = true;
+                    }
+                }
+
+                if (document.getElementById("price").value < 0) {
+                    validated = false;
+                }
+
+                return validated;
+            }
+
+            function showResults() {
+                var input_list = document.getElementsByName('inputBox');
+                var results_area = document.getElementById('results');
+                if (validateFields() == true) {
+
+                    var xmlhttp = new XMLHttpRequest();
+
+                    xmlhttp.onreadystatechange = function ()
+                    {
+                        if (xmlhttp.readyState == 4 && this.status == 200) {
+                            results_area.style = resultsStyle;
+                            results_area.innerHTML = xmlhttp.responseText;
+                        }
+                    }
+
+                    //var age = document.getElementById("age").value.toString().trim();
+                    var searchString = "";
+                    var attribute = "";
+                    var value;
+                    for (var i = 0; i < input_list.length; i++) {
+                        attribute = input_list[i].getAttribute('id').toString();
+                        value = input_list[i].value.toString();
+                        searchString += attribute + '=' + value;
+
+                        if (i < input_list.length - 1) {
+                            searchString += "&";
+                        }
+                        //alert(input_list[i].value.toString().trim());
+                    }
+                    //alert(searchString);
+                    xmlhttp.open("GET", "books.php?" + searchString, false);
+
+                    xmlhttp.send();
+                } else {
+                    if (document.getElementById("price").value < 0) {
+                        negativeResults();
+                    } else {
+                        resetResults();
+                    }
+                }
+
+
+
+                for (var i = 0; i < input_list.length; i++) {
+                    // either way should get you the value
+                    input_list[i].onkeyup = function () {
+                        showResults();
+                    };
+                }
+            }
+
+            function clearForm() {
+                var input_list = document.getElementsByName('inputBox');
+                for (var i = 0; i < input_list.length; i++) {
+                    input_list[i].value = "";
+                }
+                resetResults();
+            }
+
+            function negativeResults() {
+                resetResults();
+                var results_area = document.getElementById('results');
+                results_area.innerHTML = negativeResultsPlaceholderHTML;
+            }
+
+            function resetResults() {
+                var results_area = document.getElementById('results');
+                resultsPlaceholderStyle = "margin-top:285px;  margin-bottom:60px; text-align:center;";
+                results_area.style = resultsPlaceholderStyle;
+                results_area.innerHTML = resultsPlaceholderHTML;
+            }
+        </script>
+    </head>
+    <body>
+        <div id='header1' class='header w3-blue' style='overflow-x:scroll;'>
+            <h1 class='w3-blue shadowedtext' style='margin-left: 15px;'>Search New York Times Best Sellers</h1>
+
+            <form class='w3-blue' style='margin-bottom:15px;' name="searchForm">
+                <table class='none'>
+                    <tr>
+                        <td><h4 class='w3-blue shadowedtext' style='margin-left: 30px; margin-right:30px;'>Age Group: </h4></td><td><input type="text" style="  border:0px; box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);" name="inputBox" id="age" placeholder=" e.g. 6 to 12 or 12 and up" onkeydown="preventSubmission();"></td>
+                        <td><h4 class='w3-blue shadowedtext' style='margin-left: 30px; margin-right:30px;'>Contributor: </h4> </td> <td><input type="text" style="border:0px; box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);" name="inputBox" id="contributor" placeholder=" e.g. John Smith" onkeydown="preventSubmission();"></td>
+                        <td><h4 class='w3-blue shadowedtext' style='margin-left: 30px; margin-right:30px;'>Publisher: </h4> </td> <td><input type="text" style="border:0px; box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);" name="inputBox" id="publisher" placeholder=" e.g. Harper Collins" onkeydown="preventSubmission();"></td>
+                        <td><h4 class='w3-blue shadowedtext' style='margin-left: 30px; margin-right:30px;'>ISBN Number: </h4> </td> <td><input type="text" style="border:0px; box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);" name="inputBox" id="isbn" placeholder=" Must be 10 or 13 digits" onkeydown="preventSubmission();"></td>
+                    </tr>
+                    <tr>
+                        <td><h4 class='w3-blue shadowedtext' style='margin-left: 30px; margin-right:30px;'>Title: </h4></td><td><input type="text" style="border:0px; box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);" name="inputBox" id="title" placeholder=" e.g. Harry Potter" onkeydown="preventSubmission();"></td>
+                        <td><h4 class='w3-blue shadowedtext' style='margin-left: 30px; margin-right:30px;'>Author: </h4></td><td><input type="text" style="border:0px; box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);" name="inputBox" id="author" placeholder=" e.g. J K Rowling" onkeydown="preventSubmission();"></td>
+                        <td><h4 class='w3-blue shadowedtext' style='margin-left: 30px; margin-right:30px;'>Price: </h4></td><td><input type="number" style="border:0px; box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);" name="inputBox" id="price" placeholder=" Enter maximum price" onkeydown="preventSubmission();"></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td><input class='w3-grey w3-button' style='display: block; margin:auto;' type="button" value="Clear Criteria" onclick="clearForm();"></td>
+                        <td><input class='w3-dark-grey w3-button' style='display: block; margin:auto;' type="button" value="Search Best Sellers" onclick="showResults();"></td>
+                    </tr>
+                </table>
+            </form>
+        </div>
+        <hr/>
+        <div id="results" style="margin-top:285px;  margin-bottom:60px; text-align:center;">
+
+            <img src='book_PNG2117.png' height=225 alt="books"></br>
+            <h3 class='w3-blue shadowedtext' style='text-align:center'>Enter search criteria to begin...</h3>
+
+        </div>
+        <div class='footer w3-blue shadowedtext'>Created by John Galletta</div>
+    </body>
+</html>
